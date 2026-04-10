@@ -4,7 +4,10 @@ from pydantic import BaseModel
 from fastapi import File, UploadFile
 import pandas as pd
 from datetime import datetime
-
+from wordcloud import WordCloud
+from fastapi.responses import StreamingResponse
+import matplotlib.pyplot as plt
+import io
 from app.config.db import collection
 from app.services.sentiment_service import analyze_sentiment
 
@@ -25,6 +28,33 @@ class TextInput(BaseModel):
 def home():
     return {"message": "Backend running 🚀"}
 
+@app.get("/wordcloud")
+def generate_wordcloud():
+    data = list(collection.find({}, {"_id": 0}))
+
+    # Combine all text
+    text_data = " ".join([item.get("text", "") for item in data])
+
+    if not text_data.strip():
+        return {"message": "No data available"}
+
+    # Generate word cloud
+    wordcloud = WordCloud(
+        width=800,
+        height=400,
+        background_color="white"
+    ).generate(text_data)
+
+    # Convert to image
+    img = io.BytesIO()
+    plt.imshow(wordcloud, interpolation="bilinear")
+    plt.axis("off")
+    plt.savefig(img, format="png")
+    plt.close()
+
+    img.seek(0)
+
+    return StreamingResponse(img, media_type="image/png")
 
 @app.get("/test-db")
 def test_db():

@@ -13,6 +13,11 @@ export const fetchAllData = async () => {
   const response = await API.get("/all-data");
   return response.data;
 };
+
+export const getWordCloud = () => {
+  return "http://127.0.0.1:8000/wordcloud";
+};
+
 export const uploadCSV = async (file) => {
   const formData = new FormData();
   formData.append("file", file);

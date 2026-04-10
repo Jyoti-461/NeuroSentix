@@ -146,6 +146,19 @@ function Dashboard() {
           </LineChart>
         </div>
       </div>
+      {/* WORD CLOUD */}
+      <div className="mt-10">
+  <h2 className="text-xl font-semibold mb-4">
+    Word Cloud
+  </h2>
+
+  <img
+    src="http://127.0.0.1:8000/wordcloud"
+    alt="Word Cloud"
+    className="border rounded"
+  />
+</div>
+
 
       {/* TABLE */}
       <div className="mt-8">
