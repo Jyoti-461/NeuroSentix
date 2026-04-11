@@ -30,6 +30,10 @@ class TextInput(BaseModel):
     text: str
 
 
+@app.get("/health")
+def health_check():
+    return {"status": "OK"}
+
 @app.get("/")
 def home():
     return {"message": "Backend running 🚀"}
