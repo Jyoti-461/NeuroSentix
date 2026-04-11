@@ -15,8 +15,9 @@ export const fetchAllData = async () => {
   return response.data;
 };
 
-export const getWordCloud = () => {
-  return "http://127.0.0.1:8000/wordcloud";
+export const getWordCloud = async () => {
+  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/wordcloud`);
+  return res;
 };
 
 export const uploadCSV = async (file) => {
