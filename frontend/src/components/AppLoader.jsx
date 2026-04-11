@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const BACKEND_URL = "https://your-backend.onrender.com";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 function AppLoader({ children }) {
   const [isReady, setIsReady] = useState(false);
@@ -8,14 +8,14 @@ function AppLoader({ children }) {
 
   const messages = [
     "Initializing required protocols...",
-    "Connecting to servers...",
-    "Preparing your dashboard...",
+    "Connecting to AI services...",
+    "Preparing your personalized dashboard...",
     "Almost ready..."
   ];
 
   useEffect(() => {
     const wakeBackend = async () => {
-      let retries = 5;
+      let retries = 6;
 
       while (retries--) {
         try {
@@ -33,7 +33,7 @@ function AppLoader({ children }) {
     wakeBackend();
   }, []);
 
-  // rotating messages
+  // rotating loading text
   useEffect(() => {
     const interval = setInterval(() => {
       setMessageIndex((prev) => (prev + 1) % messages.length);
