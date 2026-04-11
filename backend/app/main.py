@@ -11,6 +11,12 @@ import io
 from app.config.db import collection
 from app.services.sentiment_service import analyze_sentiment
 
+
+# allow_origins=[
+#     "http://localhost:5173",
+#     "https://neurosentix.vercel.app"
+# ]
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,

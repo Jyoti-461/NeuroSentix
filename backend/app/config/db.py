@@ -1,8 +1,8 @@
 from pymongo import MongoClient
 import os
-# from dotenv import load_dotenv  -when on local host
+from dotenv import load_dotenv  #-when on local host
 
-# load_dotenv()                   -when on local host
+load_dotenv()                   #-when on local host
 
 MONGO_URI = os.getenv("MONGO_URI")
 if not MONGO_URI:
