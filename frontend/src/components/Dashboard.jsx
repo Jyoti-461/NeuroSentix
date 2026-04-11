@@ -17,7 +17,7 @@ function Dashboard() {
   const [data, setData] = useState([]);
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
-
+  const [wcLoaded, setWcLoaded] = useState(false);
   useEffect(() => {
     loadData();
   }, []);
