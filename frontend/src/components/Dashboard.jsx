@@ -148,17 +148,18 @@ function Dashboard() {
       </div>
       {/* WORD CLOUD */}
       <div className="mt-10">
-  <h2 className="text-xl font-semibold mb-4">
-    Word Cloud
-  </h2>
+  <h2 className="text-xl font-semibold mb-4">Word Cloud</h2>
+
+  {!wcLoaded && <p>Generating word cloud...</p>}
 
   <img
-    src="http://127.0.0.1:8000/wordcloud"
+    src={`${import.meta.env.VITE_BACKEND_URL}/wordcloud`}
     alt="Word Cloud"
     className="border rounded"
+    onLoad={() => setWcLoaded(true)}
   />
 </div>
-
+{/* src="http://127.0.0.1:8000/wordcloud" */}
 
       {/* TABLE */}
       <div className="mt-8">

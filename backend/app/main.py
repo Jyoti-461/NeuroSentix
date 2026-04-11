@@ -42,30 +42,29 @@ def home():
 def generate_wordcloud():
     data = list(collection.find({}, {"_id": 0}))
 
-    # Combine all text
     text_data = " ".join([item.get("text", "") for item in data])
 
     if not text_data.strip():
-        return {"message": "No data available"}
+        text_data = "No Data Available"
 
-    # Generate word cloud
     wordcloud = WordCloud(
         width=800,
         height=400,
         background_color="white"
     ).generate(text_data)
 
-    # Convert to image
     img = io.BytesIO()
-    plt.imshow(wordcloud, interpolation="bilinear")
-    plt.axis("off")
-    plt.savefig(img, format="png")
-    plt.close()
+
+    fig, ax = plt.subplots()
+    ax.imshow(wordcloud, interpolation="bilinear")
+    ax.axis("off")
+
+    plt.savefig(img, format="png", bbox_inches="tight")
+    plt.close(fig)
 
     img.seek(0)
 
     return StreamingResponse(img, media_type="image/png")
-
 @app.get("/test-db")
 def test_db():
     collection.insert_one({"test": "working"})
