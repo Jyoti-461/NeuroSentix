@@ -13,3 +13,5 @@ client = MongoClient(MONGO_URI)
 db = client["NeuroSentix"]
 
 collection = db["reviews"]
+collection.create_index("created_at")
+collection.create_index("sentiment")
