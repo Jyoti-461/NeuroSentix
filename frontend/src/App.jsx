@@ -1,21 +1,28 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Upload from "./components/Upload";
+import Home      from "./pages/Home";
+import Upload    from "./components/Upload";
 import Dashboard from "./components/Dashboard";
-import AppLoader from "./components/AppLoader";
-import Navbar from "./components/Navbar";
+import Navbar    from "./components/Navbar";
 
 function App() {
   return (
-    <AppLoader>
-      <Router>
-        <Navbar />
-        <Routes>
-          <Route path="/"         element={<Dashboard />} />
-          <Route path="/analyze"  element={<Upload />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-        </Routes>
-      </Router>
-    </AppLoader>
+    <Router>
+      <Routes>
+        {/* Home is standalone — has its own header, no Navbar */}
+        <Route path="/" element={<Home />} />
+
+        {/* App pages share the Navbar */}
+        <Route path="/*" element={
+          <>
+            <Navbar />
+            <Routes>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/analyze"   element={<Upload />} />
+            </Routes>
+          </>
+        } />
+      </Routes>
+    </Router>
   );
 }
 
