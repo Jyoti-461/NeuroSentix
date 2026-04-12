@@ -98,22 +98,31 @@ function Logo() {
     <NavLink to="/" style={{ display: "flex", alignItems: "center", gap: "0.5rem", textDecoration: "none" }}>
       {/* Animated sentiment orb */}
       <div style={{ position: "relative", width: 32, height: 32, flexShrink: 0 }}>
-        <div style={{
-          width: 32, height: 32, borderRadius: "50%",
-          background: "linear-gradient(135deg, var(--color-positive) 0%, var(--color-accent) 100%)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 0 0 0 var(--color-accent-light)",
-          animation: "logoOrb 3s ease-in-out infinite",
-        }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            <path d="M8 10h8M8 14h5" />
-          </svg>
-        </div>
-      </div>
+  <div style={{
+    width: 32, 
+    height: 32, 
+    borderRadius: "50%",
+    // overflow: "hidden", // 🔴 Keeps it a perfect circle
+    display: "flex", 
+    alignItems: "center", 
+    justifyContent: "center"
+  }}>
+    <img
+      src="/neurosentixlogo.png"
+      alt="logo"
+      style={{
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        display: "block",
+        transform: "scale(1.8)" // 🟢 Keeps the brain graphic filling the circle
+      }}
+    />
+  </div>
+</div>
       <div>
         <div style={{ fontWeight: 800, fontSize: "0.975rem", lineHeight: 1.1, color: "var(--text-primary)", letterSpacing: "-0.01em" }}>
-          SentiScope
+          NeuroSentix
         </div>
         <div style={{ fontSize: "0.65rem", fontWeight: 500, color: "var(--text-tertiary)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
           Analysis

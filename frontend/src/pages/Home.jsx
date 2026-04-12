@@ -272,16 +272,29 @@ export default function Home() {
         }}>
           {/* Logo */}
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
-              background: "linear-gradient(135deg, var(--color-positive) 0%, var(--color-accent) 100%)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              animation: "logoOrb 3s ease-in-out infinite",
-            }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-              </svg>
-            </div>
+            <div style={{ position: "relative", width: 32, height: 32, flexShrink: 0 }}>
+  <div style={{
+    width: 32, 
+    height: 32, 
+    borderRadius: "50%",
+    //overflow: "hidden", // 🔴 Keeps it a perfect circle
+    display: "flex", 
+    alignItems: "center", 
+    justifyContent: "center"
+  }}>
+    <img
+      src="/neurosentixlogo.png"
+      alt="logo"
+      style={{
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        display: "block",
+        transform: "scale(1.8)" // 🟢 Keeps the brain graphic filling the circle
+      }}
+    />
+  </div>
+</div>
             <div>
               <span style={{ fontWeight: 800, fontSize: "0.95rem", color: "var(--text-primary)", letterSpacing: "-0.01em" }}>NeuroSentix</span>
             </div>
