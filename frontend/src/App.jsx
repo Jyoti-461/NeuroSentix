@@ -11,9 +11,10 @@ function App() {
   return (
     <Router>
       <Routes>
+        
         {/* Home is standalone — has its own header, no Navbar */}
         <Route path="/" element={<Home />} />
-
+        
         {/* App pages share the Navbar */}
         <Route path="/*" element={
           <>
