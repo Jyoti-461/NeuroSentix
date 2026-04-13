@@ -54,9 +54,9 @@ const FEATURES = [
 
 /* ─── Stats ─────────────────────────────────────── */
 const STATS = [
-  { value: "3", label: "Sentiment classes" },
+  { value: "3",    label: "Sentiment classes" },
   { value: "~90%", label: "Model accuracy" },
-  { value: "CSV", label: "Batch support" },
+  { value: "CSV",  label: "Batch support" },
   { value: "Live", label: "Trend charts" },
 ];
 
@@ -90,12 +90,12 @@ function Orbs() {
 function Dots() {
   return (
     <span style={{ display: "inline-flex", gap: 3, alignItems: "center" }}>
-      {[0,1,2].map(i => (
+      {[0, 1, 2].map(i => (
         <span key={i} style={{
           width: 4, height: 4, borderRadius: "50%",
           background: "var(--color-accent)", display: "inline-block",
-          animation: `dotBounce 1.2s ease-in-out ${i*0.2}s infinite`,
-        }}/>
+          animation: `dotBounce 1.2s ease-in-out ${i * 0.2}s infinite`,
+        }} />
       ))}
     </span>
   );
@@ -127,9 +127,11 @@ function WakeStatus({ stageIdx, isReady, elapsed, progress }) {
             height: "100%", borderRadius: 99,
             background: "linear-gradient(90deg, var(--color-accent), var(--color-positive))",
             width: `${progress}%`,
-            transition: progress >= 99 ? "width 0.5s cubic-bezier(0.16,1,0.3,1)" : "width 0.8s cubic-bezier(0.16,1,0.3,1)",
+            transition: progress >= 99
+              ? "width 0.5s cubic-bezier(0.16,1,0.3,1)"
+              : "width 0.8s cubic-bezier(0.16,1,0.3,1)",
             boxShadow: "0 0 6px rgba(29,158,117,0.4)",
-          }}/>
+          }} />
         </div>
       </div>
 
@@ -196,62 +198,77 @@ export default function Home() {
   const [stageIdx, setStageIdx] = useState(0);
   const [progress, setProgress] = useState(0);
   const [elapsed, setElapsed]   = useState(0);
-  const readyRef                = useRef(false);
-  const startTime               = useRef(Date.now());
 
-  /* ── Ping backend ── */
+  // readyRef is the single source of truth for "backend is up"
+  // used inside intervals/timeouts to avoid stale closure issues
+  const readyRef   = useRef(false);
+  const startTime  = useRef(Date.now());
+
+  /* ── 1. Ping backend until it responds ── */
   useEffect(() => {
+    let cancelled = false; // prevents setState after unmount
+
     const wake = async () => {
-      let isAwake = false;
       let attempts = 0;
-      
-      // Keep polling until we actually get a 200 OK
-      // Cap at 40 attempts (2 minutes) to prevent infinite loops if the server crashes
-      while (!isAwake && attempts < 35) {
+
+      while (!cancelled && attempts < 40) { // 40 × 3 s = 2 min cap
         try {
           const res = await fetch(`${BACKEND_URL}/health`);
-          if (res.ok) {
-            isAwake = true;
+          if (res.ok && !cancelled) {
+            // Mark ready atomically BEFORE any setState so intervals
+            // that fire in the same event-loop turn see it immediately.
             readyRef.current = true;
-            setIsReady(true);
-            setProgress(100); // 👈 This is the true "snap" to 100%
+
+            // Batch all visual state updates together:
+            setProgress(100);                          // rush bar to 100 %
+            setStageIdx(WAKE_STAGES.length - 1);       // mark all stages done
+            setIsReady(true);                          // unlock button (last)
             return;
           }
         } catch (_) {
-          // Silent catch, server still sleeping
+          // server still sleeping — silent retry
         }
         attempts++;
         await new Promise(r => setTimeout(r, 3000));
       }
-      
-      // Only reach here if the server completely failed to wake up after 2 minutes.
-      console.error("Backend failed to wake up.");
+
+      // Reached only if backend never responded in 2 min
+      console.error("NeuroSentix: backend failed to wake after 2 min.");
     };
+
     wake();
+    return () => { cancelled = true; };
   }, []);
 
-  /* ── Progress crawl (asymptotes at 92%) ── */
+  /* ── 2. Progress bar crawl — asymptotes toward 92 %, hard-stops when ready ── */
   useEffect(() => {
     const t = setInterval(() => {
-      if (readyRef.current) return;
-      setElapsed(Math.floor((Date.now() - startTime.current) / 1000));
-      setProgress(p => p + (92 - p) * 0.015);
+      if (readyRef.current) {
+        // Backend already responded — kill the interval immediately so
+        // it can never overwrite the setProgress(100) fired by the ping.
+        clearInterval(t);
+        return;
+      }
+      setProgress(p => Math.min(p + (92 - p) * 0.015, 92)); // hard cap at 92
     }, 250);
     return () => clearInterval(t);
   }, []);
 
-  /* ── Elapsed counter ── */
+  /* ── 3. Elapsed-seconds counter ── */
   useEffect(() => {
-    const t = setInterval(() => setElapsed(Math.floor((Date.now() - startTime.current) / 1000)), 1000);
+    const t = setInterval(() => {
+      if (readyRef.current) { clearInterval(t); return; }
+      setElapsed(Math.floor((Date.now() - startTime.current) / 1000));
+    }, 1000);
     return () => clearInterval(t);
   }, []);
 
-  /* ── Visual stages ── */
+  /* ── 4. Visual stage advancement on fixed timers (skipped if already ready) ── */
   useEffect(() => {
     const timers = [
-      setTimeout(() => setStageIdx(1), 4000),
-      setTimeout(() => setStageIdx(2), 9000),
-      setTimeout(() => setStageIdx(3), 14000),
+      setTimeout(() => { if (!readyRef.current) setStageIdx(1); }, 3500),
+      setTimeout(() => { if (!readyRef.current) setStageIdx(2); }, 8000),
+      setTimeout(() => { if (!readyRef.current) setStageIdx(3); }, 13000),
     ];
     return () => timers.forEach(clearTimeout);
   }, []);
@@ -281,28 +298,27 @@ export default function Home() {
           {/* Logo */}
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <div style={{ position: "relative", width: 32, height: 32, flexShrink: 0 }}>
-  <div style={{
-    width: 32, 
-    height: 32, 
-    borderRadius: "50%",
-    //overflow: "hidden", // 🔴 Keeps it a perfect circle
-    display: "flex", 
-    alignItems: "center", 
-    justifyContent: "center"
-  }}>
-    <img
-      src="/neurosentixlogo.png"
-      alt="logo"
-      style={{
-        width: "100%",
-        height: "100%",
-        objectFit: "cover",
-        display: "block",
-        transform: "scale(1.8)" // 🟢 Keeps the brain graphic filling the circle
-      }}
-    />
-  </div>
-</div>
+              <div style={{
+                width: 32,
+                height: 32,
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}>
+                <img
+                  src="/neurosentixlogo.png"
+                  alt="logo"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    display: "block",
+                    transform: "scale(1.8)",
+                  }}
+                />
+              </div>
+            </div>
             <div>
               <span style={{ fontWeight: 800, fontSize: "0.95rem", color: "var(--text-primary)", letterSpacing: "-0.01em" }}>NeuroSentix</span>
             </div>
@@ -311,14 +327,14 @@ export default function Home() {
           {/* Nav links */}
           <nav style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
             {["Features", "About", "How it works"].map(l => (
-              <a key={l} href={`#${l.toLowerCase().replace(/ /g,"-")}`} style={{
+              <a key={l} href={`#${l.toLowerCase().replace(/ /g, "-")}`} style={{
                 fontSize: "0.8375rem", fontWeight: 500,
                 padding: "0.375rem 0.75rem", borderRadius: "var(--radius-md)",
                 color: "var(--text-secondary)", textDecoration: "none",
                 transition: "background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out)",
               }}
-              onMouseEnter={e => { e.currentTarget.style.background="var(--bg-overlay)"; e.currentTarget.style.color="var(--text-primary)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color="var(--text-secondary)"; }}
+              onMouseEnter={e => { e.currentTarget.style.background = "var(--bg-overlay)"; e.currentTarget.style.color = "var(--text-primary)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-secondary)"; }}
               >{l}</a>
             ))}
           </nav>
@@ -345,7 +361,7 @@ export default function Home() {
             padding: "0.3rem 0.75rem", borderRadius: "99px", marginBottom: "1.25rem",
             border: "1px solid color-mix(in srgb, var(--color-accent) 25%, transparent)",
           }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--color-accent)", animation: "pulse-ring 2s ease-out infinite", display: "inline-block" }}/>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--color-accent)", animation: "pulse-ring 2s ease-out infinite", display: "inline-block" }} />
             AI-Powered Sentiment Analysis
           </div>
 
@@ -401,8 +417,8 @@ export default function Home() {
                 transition: "transform var(--dur-fast) var(--ease-spring), box-shadow var(--dur-fast) var(--ease-out)",
                 boxShadow: "0 4px 14px rgba(29,158,117,0.35)",
               }}
-              onMouseEnter={e => { e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 6px 20px rgba(29,158,117,0.45)"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="0 4px 14px rgba(29,158,117,0.35)"; }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(29,158,117,0.45)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 14px rgba(29,158,117,0.35)"; }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
@@ -416,8 +432,8 @@ export default function Home() {
               color: "var(--text-secondary)", textDecoration: "none",
               transition: "color var(--dur-fast) var(--ease-out)",
             }}
-            onMouseEnter={e => e.currentTarget.style.color="var(--text-primary)"}
-            onMouseLeave={e => e.currentTarget.style.color="var(--text-secondary)"}
+            onMouseEnter={e => e.currentTarget.style.color = "var(--text-primary)"}
+            onMouseLeave={e => e.currentTarget.style.color = "var(--text-secondary)"}
             >
               How it works →
             </a>
@@ -445,7 +461,7 @@ export default function Home() {
               </p>
             </div>
 
-            {/* The Dashboard button */}
+            {/* Dashboard button */}
             <button
               onClick={() => isReady && navigate("/dashboard")}
               disabled={!isReady}
@@ -464,8 +480,8 @@ export default function Home() {
                 transform: "translateY(0)",
                 position: "relative", overflow: "hidden",
               }}
-              onMouseEnter={e => { if (isReady) { e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 8px 24px rgba(83,74,183,0.35)"; }}}
-              onMouseLeave={e => { e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow=isReady?"0 4px 16px rgba(83,74,183,0.25)":"none"; }}
+              onMouseEnter={e => { if (isReady) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(83,74,183,0.35)"; } }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = isReady ? "0 4px 16px rgba(83,74,183,0.25)" : "none"; }}
             >
               {/* Shimmer on disabled */}
               {!isReady && (
@@ -474,7 +490,7 @@ export default function Home() {
                   background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%)",
                   backgroundSize: "200% 100%",
                   animation: "shimmer 2s ease-in-out infinite",
-                }}/>
+                }} />
               )}
 
               {isReady ? (
@@ -494,7 +510,7 @@ export default function Home() {
                     borderRadius: "50%",
                     animation: "spin 0.8s linear infinite",
                     display: "inline-block", flexShrink: 0,
-                  }}/>
+                  }} />
                   Waiting for server…
                 </>
               )}
@@ -541,8 +557,8 @@ export default function Home() {
               transition: "box-shadow var(--dur-base) var(--ease-out), transform var(--dur-fast) var(--ease-spring)",
               animation: `fadeUp 0.5s var(--ease-out) ${i * 0.08}s both`,
             }}
-            onMouseEnter={e => { e.currentTarget.style.boxShadow="var(--shadow-md)"; e.currentTarget.style.transform="translateY(-3px)"; }}
-            onMouseLeave={e => { e.currentTarget.style.boxShadow="var(--shadow-sm)"; e.currentTarget.style.transform="translateY(0)"; }}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = "var(--shadow-md)"; e.currentTarget.style.transform = "translateY(-3px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = "var(--shadow-sm)"; e.currentTarget.style.transform = "translateY(0)"; }}
             >
               <div style={{
                 width: 44, height: 44, borderRadius: "var(--radius-md)",
@@ -599,7 +615,7 @@ export default function Home() {
           <div style={{ display: "flex", flexDirection: "column", gap: "0.875rem" }}>
             {[
               { label: "Problem it solves", text: "Manually reading thousands of reviews, support tickets, or social posts is impossible at scale. NeuroSentix automates the emotional pulse-check.", color: "var(--color-positive)" },
-              { label: "Who it helps", text: "Product teams, researchers, marketers, and developers who need to turn raw text into structured sentiment data quickly.", color: "var(--color-accent)" },
+              { label: "Who it helps",       text: "Product teams, researchers, marketers, and developers who need to turn raw text into structured sentiment data quickly.", color: "var(--color-accent)" },
               { label: "What makes it different", text: "End-to-end — from raw text input to visual trend charts — in one lightweight, deployable full-stack app.", color: "var(--color-negative)" },
             ].map(item => (
               <div key={item.label} style={{
@@ -662,7 +678,7 @@ export default function Home() {
               }}>
                 {s.step}
               </div>
-              <div style={{ width: 28, height: 3, background: s.color, borderRadius: 99, marginBottom: "0.875rem" }}/>
+              <div style={{ width: 28, height: 3, background: s.color, borderRadius: 99, marginBottom: "0.875rem" }} />
               <h3 style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.5rem" }}>{s.title}</h3>
               <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>{s.desc}</p>
             </div>
