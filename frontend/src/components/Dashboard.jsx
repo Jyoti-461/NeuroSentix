@@ -4,7 +4,7 @@ import {
   PieChart, Pie, Cell, Tooltip, Legend,
   LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer,
 } from "recharts";
-
+import { Link } from "react-router-dom";
 /* ─── Sentiment config ─────────────────────────── */
 const SENTIMENT_CONFIG = {
   Positive: { color: "var(--color-positive)", bg: "var(--color-positive-light)", dark: "var(--color-positive-dark)", icon: "↑" },
@@ -405,7 +405,86 @@ function Dashboard() {
             </div>
 
             {/* ── Table ── */}
-            <div style={{
+            {/* ── Recent History Table ── */}
+            <div style={{ 
+              background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)",
+              borderRadius: "var(--radius-lg)", overflow: "hidden", boxShadow: "var(--shadow-sm)",
+            }}>
+              <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--border-subtle)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h2 style={{ ...sectionTitle, marginBottom: 0 }}><span style={sectionAccent} />Recent Reviews</h2>
+                <span style={{ fontSize: "0.75rem", color: "var(--text-tertiary)", background: "var(--bg-surface)", padding: "2px 10px", borderRadius: "99px", fontWeight: 600 }}>
+                  Showing latest 10 of {filteredData.length}
+                </span>
+              </div>
+
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ background: "var(--bg-surface)" }}>
+                      {["Text", "Sentiment", "Score"].map((h) => (
+                        <th key={h} style={{
+                          padding: "0.75rem 1rem", textAlign: h === "Text" ? "left" : "center",
+                          fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.07em",
+                          textTransform: "uppercase", color: "var(--text-tertiary)",
+                          borderBottom: "1px solid var(--border-default)",
+                        }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* 1. Copy array, 2. Sort newest to oldest, 3. Keep only 10 items */}
+                    {[...filteredData]
+                      .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+                      .slice(0, 10)
+                      .map((item, i) => <TableRow key={i} item={item} index={i} />)}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* ── Footer Link to Full History ── */}
+              <div style={{
+                padding: "1rem",
+                textAlign: "center",
+                borderTop: "1px solid var(--border-subtle)",
+                background: "var(--bg-surface)"
+              }}>
+                <Link to="/history" style={{
+                  fontSize: "0.85rem",
+                  fontWeight: 600,
+                  color: "var(--color-accent)",
+                  textDecoration: "none",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  transition: "color var(--dur-fast) var(--ease-out)"
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = "var(--text-primary)"}
+                onMouseLeave={e => e.currentTarget.style.color = "var(--color-accent)"}
+                >
+                  View full history →
+                </Link>
+              </div>
+            </div>
+            {/* Displey full hisotry in down */}
+          </>
+        )}
+      </div>
+
+      {/* ── Responsive page padding ── */}
+      <style>{`
+        :root { --page-px: 1.25rem; }
+        @media (min-width: 640px)  { :root { --page-px: 1.5rem; } }
+        @media (min-width: 1024px) { :root { --page-px: 2rem; } }
+      `}</style>
+    </div>
+  );
+}
+
+export default Dashboard;
+
+
+//Display full history
+{/* <div style={{ 
               background: "var(--bg-elevated)", border: "1px solid var(--border-subtle)",
               borderRadius: "var(--radius-lg)", overflow: "hidden", boxShadow: "var(--shadow-sm)",
             }}>
@@ -435,19 +514,4 @@ function Dashboard() {
                   </tbody>
                 </table>
               </div>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* ── Responsive page padding ── */}
-      <style>{`
-        :root { --page-px: 1.25rem; }
-        @media (min-width: 640px)  { :root { --page-px: 1.5rem; } }
-        @media (min-width: 1024px) { :root { --page-px: 2rem; } }
-      `}</style>
-    </div>
-  );
-}
-
-export default Dashboard;
+            </div> */}

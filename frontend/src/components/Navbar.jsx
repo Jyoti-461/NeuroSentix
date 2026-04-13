@@ -4,7 +4,7 @@ import { NavLink, useLocation } from "react-router-dom";
 /* ─── Nav Items ─────────────────────────────────── */
 const NAV_ITEMS = [
   {
-    to: "/",
+    to: "/dashboard",
     label: "Dashboard",
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">

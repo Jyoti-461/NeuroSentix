@@ -202,22 +202,30 @@ export default function Home() {
   /* ── Ping backend ── */
   useEffect(() => {
     const wake = async () => {
-      let retries = 10;
-      while (retries--) {
+      let isAwake = false;
+      let attempts = 0;
+      
+      // Keep polling until we actually get a 200 OK
+      // Cap at 40 attempts (2 minutes) to prevent infinite loops if the server crashes
+      while (!isAwake && attempts < 35) {
         try {
           const res = await fetch(`${BACKEND_URL}/health`);
           if (res.ok) {
+            isAwake = true;
             readyRef.current = true;
             setIsReady(true);
-            setProgress(100);
+            setProgress(100); // 👈 This is the true "snap" to 100%
             return;
           }
-        } catch (_) {}
+        } catch (_) {
+          // Silent catch, server still sleeping
+        }
+        attempts++;
         await new Promise(r => setTimeout(r, 3000));
       }
-      readyRef.current = true;
-      setIsReady(true);
-      setProgress(100);
+      
+      // Only reach here if the server completely failed to wake up after 2 minutes.
+      console.error("Backend failed to wake up.");
     };
     wake();
   }, []);
