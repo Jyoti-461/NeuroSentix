@@ -4,7 +4,7 @@ import Upload    from "./components/Upload";
 import Dashboard from "./components/Dashboard";
 import Navbar    from "./components/Navbar";
 import History from "./components/History"; // We will create this below
-import Setting from "./components/Setting"; // Placeholder for future settings page
+// import Setting from "./components/Setting"; 
 import Reports from "./components/Reports"; // Placeholder for future reports page
 
 function App() {
@@ -23,7 +23,7 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/analyze"   element={<Upload />} />
               <Route path="/history"   element={<History />} />
-              <Route path="/settings"  element={<Setting />} />
+              {/* <Route path="/settings"  element={<Setting />} /> */}
               <Route path="/reports"   element={<Reports />} />
             </Routes>
           </>

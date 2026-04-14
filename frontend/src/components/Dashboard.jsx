@@ -19,6 +19,9 @@ const PIE_COLORS = [
   "var(--color-neutral)",
 ];
 
+const BACKEND_URL =
+  import.meta.env.VITE_BACKEND_URL || "https://neurosentix.onrender.com";
+
 const fmtDate = (d) => new Date(d).toISOString().split("T")[0];
 const todayStr = fmtDate(new Date());
 const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
@@ -679,15 +682,17 @@ function Dashboard() {
                   </div>
                 )}
                 <img
-                  src={`${import.meta.env.VITE_BACKEND_URL}/wordcloud`}
-                  alt="Word Cloud"
-                  onLoad={() => setWcLoaded(true)}
-                  style={{
-                    width: "100%", borderRadius: "var(--radius-md)",
-                    border: "1px solid var(--border-subtle)",
-                    display: wcLoaded ? "block" : "none",
-                    transition: "opacity var(--dur-slow) var(--ease-out)",
-                  }}
+              src={`${BACKEND_URL}/wordcloud`}
+              alt="Word Cloud"
+              onLoad={() => setWcLoaded(true)}
+              onError={() => {
+                console.error("Wordcloud failed");
+                setWcLoaded(true);
+              }}
+              style={{
+                width: "100%",
+                display: wcLoaded ? "block" : "none",
+              }}
                 />
               </div>
             )}
