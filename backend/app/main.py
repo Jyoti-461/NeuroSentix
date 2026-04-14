@@ -1,5 +1,7 @@
-
-
+from app.services.twitter_service import extract_tweet_id, fetch_replies
+from datetime import datetime
+from app.services.sentiment_service import analyze_sentiment
+from app.config.db import collection
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -25,11 +27,43 @@ app.include_router(upload.router)
 app.include_router(analytics.router)
 
 # Flask
-@app.route("/health")
-def health():
-    return {"status": "ok"}, 200
+# @app.route("/health")
+# def health():
+#     return {"status": "ok"}, 200
 
 # FastAPI
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+@app.post("/analyze-tweet-link")
+def analyze_tweet_link(data: dict):
+    url = data.get("url")
+
+    tweet_id = extract_tweet_id(url)
+
+    if not tweet_id:
+        return {"error": "Invalid Tweet URL"}
+
+    replies = fetch_replies(tweet_id)
+
+    results = []
+
+    for r in replies:
+        sentiment = analyze_sentiment(r["text"])
+
+        doc = {
+            "text": r["text"],
+            "sentiment": sentiment["sentiment"],
+            "score": sentiment["score"],
+            "created_at": datetime.utcnow(),
+            "source": "twitter_reply"
+        }
+
+        collection.insert_one(doc)
+        results.append(doc)
+
+    return {
+        "message": "Tweet replies analyzed",
+        "count": len(results)
+    }

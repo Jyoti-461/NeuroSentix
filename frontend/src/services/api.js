@@ -19,6 +19,11 @@ export const fetchAllData = async () => {
 //   return "http://127.0.0.1:8000/wordcloud";
 // };
 
+// ✅ FIXED Tweet API (USE AXIOS, SAME STRUCTURE)
+export const analyzeTweetLink = async (url) => {
+  const response = await API.post("/analyze-tweet-link", { url });
+  return response.data;
+};
 
 export const getWordCloud = async () => {
   const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/wordcloud`);
@@ -35,5 +40,5 @@ export const uploadCSV = async (file) => {
     },
   });
 
-  return response.data;
+  return response.data; 
 };

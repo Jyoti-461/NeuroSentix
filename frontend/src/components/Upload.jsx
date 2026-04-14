@@ -1,6 +1,8 @@
 import { useState, useRef } from "react";
-import { analyzeText, uploadCSV } from "../services/api";
+import { analyzeText, uploadCSV, analyzeTweetLink } from "../services/api";
 import { useNavigate } from "react-router-dom";
+
+
 
 /* ─── Sentiment config ─────────────────── */
 const SENTIMENT_CONFIG = {
@@ -39,6 +41,7 @@ function ScoreBar({ score, sentiment }) {
 function Upload() {
   const [text, setText]           = useState("");
   const [result, setResult]       = useState(null);
+  const [tweetUrl, setTweetUrl] = useState("");
   const [file, setFile]           = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -114,6 +117,17 @@ function Upload() {
     width: 3, height: "1em", borderRadius: 2,
     background: "var(--color-accent)", display: "inline-block",
   };
+
+  const handleTweetAnalysis = async () => {
+  if (!tweetUrl) return;
+
+  try {
+    const res = await analyzeTweetLink(tweetUrl);
+    alert(res.message);
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   return (
     <div style={{
@@ -226,7 +240,22 @@ function Upload() {
             </div>
           </div>
         </div>
+                <h2 className="mt-6 font-bold">Analyze Tweet Comments</h2>
 
+<input
+  type="text"
+  placeholder="Paste Tweet URL..."
+  value={tweetUrl}
+  onChange={(e) => setTweetUrl(e.target.value)}
+  className="border p-2 w-full mt-2"
+/>
+
+<button
+  onClick={handleTweetAnalysis}
+  className="bg-purple-500 text-white px-4 py-2 mt-2 rounded"
+>
+  Analyze Tweet Comments
+</button>
         {/* ── Result Card ── */}
         {result && cfg && (
           <div style={{
