@@ -24,6 +24,12 @@ app.include_router(sentiment.router)
 app.include_router(upload.router)
 app.include_router(analytics.router)
 
+# Flask
+@app.route("/health")
+def health():
+    return {"status": "ok"}, 200
+
+# FastAPI
 @app.get("/health")
 def health():
-    return {"status": "OK"}
+    return {"status": "ok"}
