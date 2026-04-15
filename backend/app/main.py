@@ -38,32 +38,44 @@ def health():
 
 @app.post("/analyze-tweet-link")
 def analyze_tweet_link(data: dict):
-    url = data.get("url")
+    try:
+        url = data.get("url")
 
-    tweet_id = extract_tweet_id(url)
+        if not url:
+            return {"error": "URL required"}
 
-    if not tweet_id:
-        return {"error": "Invalid Tweet URL format"}
+        tweet_id = extract_tweet_id(url)
 
-    replies = fetch_replies(tweet_id)
+        if not tweet_id:
+            return {"error": "Invalid Tweet URL"}
 
-    results = []
+        # ⚠️ TEMP TEST (REMOVE snscrape issue)
+        replies = [
+            {"text": "Amazing product!", "date": datetime.utcnow()},
+            {"text": "Worst experience ever", "date": datetime.utcnow()},
+        ]
 
-    for r in replies:
-        sentiment = analyze_sentiment(r["text"])
+        results = []
 
-        doc = {
-            "text": r["text"],
-            "sentiment": sentiment["sentiment"],
-            "score": sentiment["score"],
-            "created_at": datetime.utcnow(),
-            "source": "twitter_reply"
+        for r in replies:
+            sentiment = analyze_sentiment(r["text"])
+
+            doc = {
+                "text": r["text"],
+                "sentiment": sentiment["sentiment"],
+                "score": sentiment["score"],
+                "created_at": datetime.utcnow(),
+                "source": "twitter_reply"
+            }
+
+            collection.insert_one(doc)
+            results.append(doc)
+
+        return {
+            "message": f"{len(results)} replies analyzed",
+            "count": len(results)
         }
 
-        collection.insert_one(doc)
-        results.append(doc)
-
-    return {
-        "message": "Tweet replies analyzed",
-        "count": len(results)
-    }
+    except Exception as e:
+        print("ERROR:", str(e))
+        return {"error": str(e)}
