@@ -3,7 +3,7 @@ import re
 
 # Extract Tweet ID from URL
 def extract_tweet_id(url):
-    match = re.search(r"status/(\\d+)", url)
+    match = re.search(r"(?:twitter|x)\.com/.+/status/(\d+)", url)
     return match.group(1) if match else None
 
 

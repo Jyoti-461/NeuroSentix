@@ -43,7 +43,7 @@ def analyze_tweet_link(data: dict):
     tweet_id = extract_tweet_id(url)
 
     if not tweet_id:
-        return {"error": "Invalid Tweet URL"}
+        return {"error": "Invalid Tweet URL format"}
 
     replies = fetch_replies(tweet_id)
 
