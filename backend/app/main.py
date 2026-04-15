@@ -53,8 +53,8 @@ def analyze_tweet_link(data: dict):
         try:
             replies = fetch_replies(tweet_id)
         except Exception as e:
-            print("Scrape error:", e)
-            return {"error": "Scraping failed"}
+            print("SCRAPE ERROR:", str(e))  # 🔥 ADD THIS
+            return {"error": str(e)}
 
         if not replies:
             return {"message": "No replies found", "count": 0}
