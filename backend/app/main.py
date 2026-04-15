@@ -50,10 +50,14 @@ def analyze_tweet_link(data: dict):
             return {"error": "Invalid Tweet URL"}
 
         # ⚠️ TEMP TEST (REMOVE snscrape issue)
-        replies = [
-            {"text": "Amazing product!", "date": datetime.utcnow()},
-            {"text": "Worst experience ever", "date": datetime.utcnow()},
-        ]
+        try:
+            replies = fetch_replies(tweet_id)
+        except Exception as e:
+            print("Scrape error:", e)
+            return {"error": "Scraping failed"}
+
+        if not replies:
+            return {"message": "No replies found", "count": 0}
 
         results = []
 
