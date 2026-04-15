@@ -46,6 +46,7 @@ function Upload() {
   const [analyzing, setAnalyzing] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadMsg, setUploadMsg] = useState(null); // { type: "success"|"error", text }
+  const [tweetLoading, setTweetLoading] = useState(false);
   const [dragOver, setDragOver]   = useState(false);
   const fileInputRef              = useRef(null);
   const navigate                  = useNavigate();
@@ -121,11 +122,26 @@ function Upload() {
   const handleTweetAnalysis = async () => {
   if (!tweetUrl) return;
 
+  setTweetLoading(true);
+
   try {
     const res = await analyzeTweetLink(tweetUrl);
-    alert(res.message);
+
+    console.log("Tweet API Response:", res); // DEBUG
+
+    if (res?.message) {
+      alert(res.message);
+    } else if (res?.error) {
+      alert(res.error);
+    } else {
+      alert("Something went wrong");
+    }
+
   } catch (err) {
     console.error(err);
+    alert("API failed");
+  } finally {
+    setTweetLoading(false);
   }
 };
 
@@ -242,20 +258,50 @@ function Upload() {
         </div>
                 <h2 className="mt-6 font-bold">Analyze Tweet Comments</h2>
 
-<input
-  type="text"
-  placeholder="Paste Tweet URL..."
-  value={tweetUrl}
-  onChange={(e) => setTweetUrl(e.target.value)}
-  className="border p-2 w-full mt-2"
-/>
+{/* ── Tweet Analysis Card ── */}
+<div style={sectionCard}>
+  <p style={sectionLabel}>
+    <span style={labelAccent} />
+    Tweet Analysis
+  </p>
 
-<button
-  onClick={handleTweetAnalysis}
-  className="bg-purple-500 text-white px-4 py-2 mt-2 rounded"
->
-  Analyze Tweet Comments
-</button>
+  <input
+    type="text"
+    placeholder="Paste Tweet URL..."
+    value={tweetUrl}
+    onChange={(e) => setTweetUrl(e.target.value)}
+    style={{
+      width: "100%",
+      padding: "0.75rem 1rem",
+      borderRadius: "var(--radius-md)",
+      border: "1px solid var(--border-default)",
+      background: "var(--bg-primary)",
+      color: "var(--text-primary)",
+      marginBottom: "0.75rem",
+    }}
+  />
+
+  <button
+    onClick={handleTweetAnalysis}
+    disabled={!tweetUrl}
+    style={{
+      width: "100%",
+      padding: "0.6rem",
+      borderRadius: "var(--radius-md)",
+      background: tweetUrl
+        ? "var(--color-accent)"
+        : "var(--border-default)",
+      color: "#fff",
+      fontWeight: 600,
+      cursor: tweetUrl ? "pointer" : "not-allowed",
+      transition: "all 0.2s",
+    }}
+  >
+    {tweetLoading ? "Analyzing..." : "🔍 Analyze Tweet Comments"}
+  </button>
+</div>
+
+
         {/* ── Result Card ── */}
         {result && cfg && (
           <div style={{
