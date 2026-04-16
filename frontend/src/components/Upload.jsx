@@ -277,48 +277,6 @@ function Upload() {
         </div>
                 
 
-{/* ── Tweet Analysis Card ── */}
-<div style={sectionCard}>
-  <p style={sectionLabel}>
-    <span style={labelAccent} />
-    Tweet Analysis
-  </p>
-
-  <input
-    type="text"
-    placeholder="Paste Tweet URL..."
-    value={tweetUrl}
-    onChange={(e) => setTweetUrl(e.target.value)}
-    style={{
-      width: "100%",
-      padding: "0.75rem 1rem",
-      borderRadius: "var(--radius-md)",
-      border: "1px solid var(--border-default)",
-      background: "var(--bg-primary)",
-      color: "var(--text-primary)",
-      marginBottom: "0.75rem",
-    }}
-  />
-
-  <button
-    onClick={handleTweetAnalysis}
-    disabled={!tweetUrl}
-    style={{
-      width: "100%",
-      padding: "0.6rem",
-      borderRadius: "var(--radius-md)",
-      background: tweetUrl
-        ? "var(--color-accent)"
-        : "var(--border-default)",
-      color: "#fff",
-      fontWeight: 600,
-      cursor: tweetUrl ? "pointer" : "not-allowed",
-      transition: "all 0.2s",
-    }}
-  >
-    {tweetLoading ? "Analyzing..." : "🔍 Analyze Tweet Comments"}
-  </button>
-</div>
 
 
         {/* ── Result Card ── */}
@@ -380,6 +338,50 @@ function Upload() {
             </button>
           </div>
         )}
+
+        {/* ── Tweet Analysis Card ── */}
+<div style={sectionCard}>
+  <p style={sectionLabel}>
+    <span style={labelAccent} />
+    Tweet Analysis
+  </p>
+
+  <input
+    type="text"
+    placeholder="Paste Tweet URL..."
+    value={tweetUrl}
+    onChange={(e) => setTweetUrl(e.target.value)}
+    style={{
+      width: "100%",
+      padding: "0.75rem 1rem",
+      borderRadius: "var(--radius-md)",
+      border: "1px solid var(--border-default)",
+      background: "var(--bg-primary)",
+      color: "var(--text-primary)",
+      marginBottom: "0.75rem",
+    }}
+  />
+
+  <button
+    onClick={handleTweetAnalysis}
+    disabled={!tweetUrl}
+    style={{
+      width: "100%",
+      padding: "0.6rem",
+      borderRadius: "var(--radius-md)",
+      background: tweetUrl
+        ? "var(--color-accent)"
+        : "var(--border-default)",
+      color: "#fff",
+      fontWeight: 600,
+      cursor: tweetUrl ? "pointer" : "not-allowed",
+      transition: "all 0.2s",
+    }}
+  >
+    {tweetLoading ? "Analyzing..." : "🔍 Analyze Tweet Comments"}
+  </button>
+</div>
+
 
         {/* ── CSV Upload Card ── */}
         <div style={sectionCard}>
