@@ -47,23 +47,25 @@ def analyze_tweet_link(data: dict):
         tweet_id = extract_tweet_id(url)
 
         if not tweet_id:
-            return {"error": "Invalid Tweet URL"}
+            return {"error": "Invalid Tweet URL. Please paste a valid x.com or twitter.com link."}
 
-        # ⚠️ TEMP TEST (REMOVE snscrape issue)
         try:
             replies = fetch_replies(tweet_id)
+        except NotImplementedError as e:
+            # Graceful fallback — snscrape / free scraping is dead
+            return {
+                "error": "Twitter reply analysis is unavailable. X (Twitter) requires a paid API key to access replies. This feature is currently disabled."
+            }
         except Exception as e:
-            print("SCRAPE ERROR:", str(e))  # 🔥 ADD THIS
-            return {"error": str(e)}
+            print("SCRAPE ERROR:", str(e))
+            return {"error": f"Failed to fetch replies: {str(e)}"}
 
         if not replies:
-            return {"message": "No replies found", "count": 0}
+            return {"message": "No replies found for this tweet.", "count": 0}
 
         results = []
-
         for r in replies:
             sentiment = analyze_sentiment(r["text"])
-
             doc = {
                 "text": r["text"],
                 "sentiment": sentiment["sentiment"],
@@ -71,15 +73,14 @@ def analyze_tweet_link(data: dict):
                 "created_at": datetime.utcnow(),
                 "source": "twitter_reply"
             }
-
             collection.insert_one(doc)
             results.append(doc)
 
         return {
-            "message": f"{len(results)} replies analyzed",
+            "message": f"{len(results)} replies analyzed successfully.",
             "count": len(results)
         }
 
     except Exception as e:
         print("ERROR:", str(e))
-        return {"error": str(e)}
+        return {"error": f"Unexpected error: {str(e)}"}

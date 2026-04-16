@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { analyzeText, uploadCSV, analyzeTweetLink } from "../services/api";
 import { useNavigate } from "react-router-dom";
 
@@ -50,7 +50,13 @@ function Upload() {
   const [dragOver, setDragOver]   = useState(false);
   const fileInputRef              = useRef(null);
   const navigate                  = useNavigate();
-
+  const [customAlert, setCustomAlert] = useState(null);
+  useEffect(() => {
+  if (customAlert) {
+    const timer = setTimeout(() => setCustomAlert(null), 3000);
+    return () => clearTimeout(timer);
+  }
+}, [customAlert]);
   /* ── Text Analysis ── */
   const handleAnalyze = async () => {
     if (!text.trim()) return;
@@ -121,27 +127,18 @@ function Upload() {
 
   const handleTweetAnalysis = async () => {
   if (!tweetUrl) return;
-
   setTweetLoading(true);
-
   try {
     const res = await analyzeTweetLink(tweetUrl);
-
-    console.log("Tweet API Response:", res); // DEBUG
-
     if (res?.message) {
-      alert(res.message);
+      setCustomAlert({ type: "success", text: res.message });
     } else if (res?.error) {
-      alert(res.error);
-    } else {
-      alert("Something went wrong");
+      setCustomAlert({ type: "error", text: res.error });
     }
-
   } catch (err) {
-    console.error(err);
-    alert("API failed");
+    setCustomAlert({ type: "error", text: "Failed to analyze tweet" });
   } finally {
-    setTweetLoading(false);
+    setTweetLoading(false); // ← this was missing!
   }
 };
 
@@ -151,6 +148,28 @@ function Upload() {
       minHeight: "100dvh",
       padding: "1.5rem 1rem 4rem",
     }}>
+      {customAlert && (
+  <div
+    style={{
+      position: "fixed",
+      top: "20px",
+      right: "20px",
+      padding: "12px 16px",
+      borderRadius: "10px",
+      background:
+        customAlert.type === "success"
+          ? "#1D9E75"
+          : "#D85A30",
+      color: "#fff",
+      fontWeight: "500",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+      zIndex: 9999,
+    }}
+  >
+    {customAlert.type === "success" ? "✅" : "❌"}{" "}
+    {customAlert.text}
+  </div>
+)}
       <div style={{ maxWidth: 680, margin: "0 auto" }}>
 
         {/* ── Page Title ── */}
@@ -256,7 +275,7 @@ function Upload() {
             </div>
           </div>
         </div>
-                <h2 className="mt-6 font-bold">Analyze Tweet Comments</h2>
+                
 
 {/* ── Tweet Analysis Card ── */}
 <div style={sectionCard}>
